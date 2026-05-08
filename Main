@@ -1,0 +1,98 @@
+import java.util.Scanner;
+import java.util.StringTokenizer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Main {
+    public static String analyzeTokens(String text, String delimiter, boolean caseSensitive) {
+        if (text == null) {
+            return "Invalid text";
+        }
+        
+        // Инициализируем структуры данных
+        Map<String, Integer> tokenCount = new HashMap<>();
+        List<String> numbers = new ArrayList<>();
+        List<String> words = new ArrayList<>();
+        List<String> mixed = new ArrayList<>();
+        List<String> special = new ArrayList<>();
+        
+        // Создаем StringTokenizer
+        StringTokenizer st = (delimiter == null) ? 
+            new StringTokenizer(text) : 
+            new StringTokenizer(text, delimiter);
+        
+        // Обрабатываем токены
+        int totalTokens = st.countTokens();
+        int totalLength = 0;
+        String longest = "";
+        String shortest = null;
+        String mostFrequent = null;
+        int maxFrequency = 0;
+        
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            String compareToken = caseSensitive ? token : token.toLowerCase();
+            
+            // Обновляем счетчик токенов
+            tokenCount.merge(compareToken, 1, Integer::sum);
+            if (tokenCount.get(compareToken) > maxFrequency) {
+                maxFrequency = tokenCount.get(compareToken);
+                mostFrequent = token;
+            }
+            
+            // Обновляем статистику длин
+            totalLength += token.length();
+            if (token.length() > longest.length()) {
+                longest = token;
+            }
+            if (shortest == null || token.length() < shortest.length()) {
+                shortest = token;
+            }
+            
+            // Классифицируем токен
+            if (token.matches("\\d+")) {
+                numbers.add(token);
+            } else if (token.matches("[a-zA-Z]+")) {
+                words.add(token);
+            } else if (token.matches(".*[a-zA-Z].*") && token.matches(".*\\d.*")) {
+                mixed.add(token);
+            } else {
+                special.add(token);
+            }
+        }
+        
+        // Формируем отчет
+        StringBuilder report = new StringBuilder();
+        report.append("Basic Analysis:\n");
+        report.append("Total tokens: ").append(totalTokens).append("\n");
+        report.append("Unique tokens: ").append(tokenCount.size()).append("\n");
+        report.append("Most frequent: ").append(mostFrequent).append(" (").append(maxFrequency).append(" times)\n\n");
+        
+        report.append("Categories:\n");
+        report.append("Numbers: ").append(numbers.size()).append(" ").append(numbers).append("\n");
+        report.append("Words: ").append(words.size()).append(" ").append(words).append("\n");
+        report.append("Mixed: ").append(mixed.size()).append(" ").append(mixed).append("\n");
+        report.append("Special: ").append(special.size()).append(" ").append(special).append("\n\n");
+        
+        report.append("Statistics:\n");
+        report.append("Average length: ").append(String.format("%.2f", (double)totalLength/totalTokens)).append("\n");
+        report.append("Longest token: ").append(longest).append("\n");
+        report.append("Shortest token: ").append(shortest);
+        
+        return report.toString();
+    }
+    
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        String text = scanner.nextLine();
+        String delimiter = scanner.nextLine();
+        boolean caseSensitive = scanner.nextBoolean();
+        
+        if (text.equals("null")) text = null;
+        if (delimiter.equals("null")) delimiter = null;
+        
+        System.out.println(analyzeTokens(text, delimiter, caseSensitive));
+    }
+}
